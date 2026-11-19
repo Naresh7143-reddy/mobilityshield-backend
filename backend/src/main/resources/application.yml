@@ -1,0 +1,21 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: mobilityshield-api
+
+mobilityshield:
+  firebase:
+    project-id: ${FIREBASE_PROJECT_ID:mobilityshield-e60b3}
+    database-id: ${FIREBASE_DATABASE_ID:default}
+    credentials-path: ${GOOGLE_APPLICATION_CREDENTIALS:C:/MobilityShield-Secrets/firebase-service-account.json}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized

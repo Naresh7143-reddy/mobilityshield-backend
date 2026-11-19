@@ -1,0 +1,633 @@
+{
+  "info": {
+    "name": "MobilityShield Backend API",
+    "_postman_id": "mobilityshield-api-collection-v1",
+    "description": "Postman API Collection for MobilityShield - Mobile Device Management and Cybersecurity Monitoring System.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "REPLACE_WITH_FIREBASE_USER_ID_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "REPLACE_WITH_FIREBASE_ADMIN_ID_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "deviceId",
+      "value": "dev-sample-id",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & System",
+      "item": [
+        {
+          "name": "Public Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health"]
+            }
+          }
+        },
+        {
+          "name": "Actuator Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/info",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "info"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication & User",
+      "item": [
+        {
+          "name": "Register User Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mobile Security Officer\",\n  \"fcmToken\": \"fcm-client-sample-token\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register-profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register-profile"]
+            }
+          }
+        },
+        {
+          "name": "Get Current Profile (Me)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Current Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Officer Name\",\n  \"fcmToken\": \"new-fcm-push-token\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Device Intelligence",
+      "item": [
+        {
+          "name": "Enroll Mobile Device",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceName\": \"Google Pixel 9 Pro\",\n  \"manufacturer\": \"Google\",\n  \"model\": \"Pixel 9 Pro\",\n  \"androidVersion\": \"15.0\",\n  \"sdkVersion\": 35,\n  \"securityPatchLevel\": \"2026-11-01\",\n  \"batteryPercentage\": 92,\n  \"charging\": false,\n  \"totalRam\": 17179869184,\n  \"availableRam\": 9663676416,\n  \"totalStorage\": 256000000000,\n  \"availableStorage\": 180000000000,\n  \"networkType\": \"WIFI\",\n  \"wifiConnected\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices/enroll",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "devices", "enroll"]
+            }
+          }
+        },
+        {
+          "name": "List User Devices",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "devices"]
+            }
+          }
+        },
+        {
+          "name": "Get Device Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices/{{deviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "devices", "{{deviceId}}"]
+            }
+          }
+        },
+        {
+          "name": "Send Device Heartbeat",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices/{{deviceId}}/heartbeat",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "devices", "{{deviceId}}", "heartbeat"]
+            }
+          }
+        },
+        {
+          "name": "Get Device Health",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices/{{deviceId}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "devices", "{{deviceId}}", "health"]
+            }
+          }
+        },
+        {
+          "name": "Deregister Device",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices/{{deviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "devices", "{{deviceId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Telemetry",
+      "item": [
+        {
+          "name": "Submit Device Telemetry",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"{{deviceId}}\",\n  \"batteryPercentage\": 85,\n  \"charging\": true,\n  \"availableRam\": 8500000000,\n  \"totalRam\": 17179869184,\n  \"availableStorage\": 175000000000,\n  \"totalStorage\": 256000000000,\n  \"networkType\": \"WIFI\",\n  \"wifiConnected\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/telemetry",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "telemetry"]
+            }
+          }
+        },
+        {
+          "name": "Get Telemetry History",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/telemetry/{{deviceId}}?limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "telemetry", "{{deviceId}}"],
+              "query": [{ "key": "limit", "value": "50" }]
+            }
+          }
+        },
+        {
+          "name": "Get Latest Telemetry",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/telemetry/{{deviceId}}/latest",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "telemetry", "{{deviceId}}", "latest"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cybersecurity & Threats",
+      "item": [
+        {
+          "name": "Get Security Score",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/security/score/{{deviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "security", "score", "{{deviceId}}"]
+            }
+          }
+        },
+        {
+          "name": "Record Security Event",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"{{deviceId}}\",\n  \"eventType\": \"ROOT_DETECTED\",\n  \"description\": \"Superuser su binary detected in /system/bin\",\n  \"severity\": \"CRITICAL\",\n  \"source\": \"MobilityShield Agent\",\n  \"metadata\": {\n    \"detectedBinary\": \"/system/bin/su\",\n    \"testMethod\": \"BinaryCheck\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/security/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "security", "events"]
+            }
+          }
+        },
+        {
+          "name": "Get Security Events",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/security/events?deviceId={{deviceId}}&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "security", "events"],
+              "query": [
+                { "key": "deviceId", "value": "{{deviceId}}" },
+                { "key": "limit", "value": "50" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Security Alerts",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/security/alerts?deviceId={{deviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "security", "alerts"],
+              "query": [{ "key": "deviceId", "value": "{{deviceId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Get Security Alert Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/security/alerts/alt-sample-id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "security", "alerts", "alt-sample-id"]
+            }
+          }
+        },
+        {
+          "name": "Mark Alert As Read",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/security/alerts/alt-sample-id/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "security", "alerts", "alt-sample-id", "read"]
+            }
+          }
+        },
+        {
+          "name": "Get Device Compliance",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/security/compliance/{{deviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "security", "compliance", "{{deviceId}}"]
+            }
+          }
+        },
+        {
+          "name": "Record Application Login Attempt",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{userToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"{{deviceId}}\",\n  \"success\": false,\n  \"source\": \"MobilityShield Mobile App\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/security/login-attempts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "security", "login-attempts"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Management (ADMIN Role Required)",
+      "item": [
+        {
+          "name": "Get Admin Dashboard Stats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "Get User Inventory",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get Device Inventory",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/devices",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "devices"]
+            }
+          }
+        },
+        {
+          "name": "Get All Security Alerts",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "alerts"]
+            }
+          }
+        },
+        {
+          "name": "Update User Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SUSPENDED\",\n  \"reason\": \"Suspicious login activities reported from anomalous geo-location\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/TARGET_USER_UID/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users", "TARGET_USER_UID", "status"]
+            }
+          }
+        },
+        {
+          "name": "Quarantine Device",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Device exhibited persistent suspicious data exfiltration attempts\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/devices/{{deviceId}}/quarantine",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "devices", "{{deviceId}}", "quarantine"]
+            }
+          }
+        },
+        {
+          "name": "Recover Device from Quarantine",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Malware eliminated and hardware factory reset verified by admin\",\n  \"targetStatus\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/devices/{{deviceId}}/recover",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "devices", "{{deviceId}}", "recover"]
+            }
+          }
+        },
+        {
+          "name": "Update Device Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\",\n  \"reason\": \"Re-activated by enterprise administrator\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/devices/{{deviceId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "devices", "{{deviceId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Get Audit Logs",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/audit-logs?limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "audit-logs"],
+              "query": [{ "key": "limit", "value": "100" }]
+            }
+          }
+        },
+        {
+          "name": "Get Device Policies",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/policies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "policies"]
+            }
+          }
+        },
+        {
+          "name": "Update Device Policy",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policyName\": \"Global Enterprise Policy\",\n  \"description\": \"Mandatory baseline security policy for all corporate mobile endpoints\",\n  \"minimumAndroidVersion\": \"13.0\",\n  \"requireScreenLock\": true,\n  \"blockRootedDevices\": true,\n  \"maximumFailedAttempts\": 3,\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/policies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "policies"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

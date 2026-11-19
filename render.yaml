@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: mobilityshield-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: singapore
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: FIREBASE_PROJECT_ID
+        value: mobilityshield-e60b3
+      - key: FIREBASE_DATABASE_ID
+        value: default
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/secrets/firebase-service-account.json
+    secretFiles:
+      - key: firebase-service-account.json
+        name: firebase-service-account.json
+        mountPath: /etc/secrets/firebase-service-account.json
