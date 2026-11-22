@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/admin-portal/index.html"
+    },
+    {
+      "source": "/styles.css",
+      "destination": "/admin-portal/styles.css"
+    },
+    {
+      "source": "/app.js",
+      "destination": "/admin-portal/app.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/admin-portal/$1"
+    }
+  ]
+}

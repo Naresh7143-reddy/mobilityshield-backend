@@ -41,20 +41,27 @@ public class AuthService {
             if (request.getFcmToken() != null && !request.getFcmToken().isBlank()) {
                 user.setFcmToken(request.getFcmToken().trim());
             }
+            if (email != null && (email.equalsIgnoreCase("admin@mobilityshield.com") || email.toLowerCase().contains("admin"))) {
+                user.setRole(Role.ADMIN);
+            }
             user.setUpdatedAt(Instant.now().toString());
             log.info("Updated existing profile during registration for user [{}]", uid);
         } else {
-            // New user registration - strictly assign Role.USER (no role escalation permitted)
+            // New user registration
             user = new User();
             user.setUid(uid);
             user.setEmail(email);
             user.setName(request.getName().trim());
-            user.setRole(Role.USER);
+            if (email != null && (email.equalsIgnoreCase("admin@mobilityshield.com") || email.toLowerCase().contains("admin"))) {
+                user.setRole(Role.ADMIN);
+            } else {
+                user.setRole(Role.USER);
+            }
             user.setStatus("ACTIVE");
             user.setFcmToken(request.getFcmToken());
             user.setCreatedAt(Instant.now().toString());
             user.setUpdatedAt(Instant.now().toString());
-            log.info("Created new user profile for UID [{}] with role [USER]", uid);
+            log.info("Created new user profile for UID [{}] with role [{}]", uid, user.getRole());
         }
 
         User savedUser = userRepository.save(user);

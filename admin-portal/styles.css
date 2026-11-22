@@ -1,0 +1,60 @@
+/* MobilityShield Enterprise Admin Portal Styles */
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #07111F;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E3A5F;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00E5FF;
+}
+
+/* Nav Item States */
+.nav-item {
+  color: #94A3B8;
+  position: relative;
+}
+.nav-item:hover {
+  background-color: #12253E;
+  color: #FFFFFF;
+}
+.nav-item.active {
+  background-color: rgba(0, 229, 255, 0.12);
+  color: #00E5FF;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+}
+
+/* Glowing Neon Elements */
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.25);
+}
+.glow-red {
+  box-shadow: 0 0 20px rgba(255, 23, 68, 0.25);
+}
+.glow-green {
+  box-shadow: 0 0 20px rgba(0, 230, 118, 0.25);
+}
+
+/* Pulse animation for active quarantine status */
+@keyframes quarantinePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+}
+
+.quarantine-pulse {
+  animation: quarantinePulse 2s infinite ease-in-out;
+}

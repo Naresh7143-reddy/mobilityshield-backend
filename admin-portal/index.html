@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MobilityShield — Central Enterprise MDM & Security Admin Portal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300E5FF'><path d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z'/></svg>">
+  
+  <!-- Google Fonts & Tailwind CSS CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            cyberDark: '#07111F',
+            cyberCard: '#0C1B2E',
+            cyberSurface: '#12253E',
+            cyberBorder: '#1E3A5F',
+            cyberCyan: '#00E5FF',
+            cyberGreen: '#00E676',
+            cyberRed: '#FF1744',
+            cyberAmber: '#FFB300',
+            cyberPurple: '#7C4DFF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons & Chart.js CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-cyberDark text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-cyberCyan selection:text-black">
+
+  <!-- ==================== AUTH LOGIN MODAL OVERLAY ==================== -->
+  <div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all duration-300">
+    <div class="bg-cyberCard border border-cyberBorder/80 rounded-2xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-20 -right-20 w-44 h-44 bg-cyberCyan/10 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-20 -left-20 w-44 h-44 bg-cyberPurple/10 rounded-full blur-3xl"></div>
+
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cyberCyan/10 border border-cyberCyan/30 mb-3 shadow-lg shadow-cyberCyan/20">
+          <i data-lucide="shield-check" class="w-8 h-8 text-cyberCyan"></i>
+        </div>
+        <h1 class="text-2xl font-extrabold tracking-tight text-white">MobilityShield</h1>
+        <p class="text-xs uppercase tracking-widest text-cyberCyan font-semibold mt-1">Enterprise Admin Portal</p>
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Administrator Email</label>
+          <div class="relative">
+            <i data-lucide="mail" class="w-4 h-4 text-slate-500 absolute left-3 top-3"></i>
+            <input type="email" id="loginEmail" required class="w-full bg-cyberSurface border border-cyberBorder rounded-xl pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-cyberCyan focus:ring-1 focus:ring-cyberCyan transition-colors" value="admin@mobilityshield.com">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Password</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 text-slate-500 absolute left-3 top-3"></i>
+            <input type="password" id="loginPassword" required class="w-full bg-cyberSurface border border-cyberBorder rounded-xl pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-cyberCyan focus:ring-1 focus:ring-cyberCyan transition-colors" value="AdminPassword123!">
+          </div>
+        </div>
+
+        <div id="loginError" class="hidden text-xs text-cyberRed bg-cyberRed/10 border border-cyberRed/30 rounded-lg p-2.5 flex items-center gap-2">
+          <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+          <span id="loginErrorMsg">Invalid credentials</span>
+        </div>
+
+        <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-cyberCyan to-blue-500 hover:from-cyan-400 hover:to-blue-600 text-black font-bold py-2.5 rounded-xl shadow-lg shadow-cyberCyan/20 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]">
+          <span id="loginBtnText">Sign In to Admin Portal</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+
+        <div class="pt-2 text-center text-xs text-slate-500">
+          Default Master Credentials: <code class="text-cyberCyan font-mono">admin@mobilityshield.com</code>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN ADMIN PORTAL LAYOUT ==================== -->
+  <div id="portalApp" class="flex-1 flex overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-cyberCard border-r border-cyberBorder flex flex-col shrink-0">
+      <!-- Logo -->
+      <div class="p-6 border-b border-cyberBorder flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyberCyan/20 to-blue-600/20 border border-cyberCyan/40 flex items-center justify-center shadow-lg shadow-cyberCyan/10">
+          <i data-lucide="shield" class="w-5 h-5 text-cyberCyan"></i>
+        </div>
+        <div>
+          <div class="font-extrabold text-sm tracking-wide text-white leading-tight">MobilityShield</div>
+          <div class="text-[10px] text-cyberCyan font-mono uppercase tracking-wider font-semibold">MDM Fleet Center</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>Dashboard</span>
+        </button>
+        <button onclick="switchTab('devices')" id="nav-devices" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          <span>Fleet Devices</span>
+          <span id="badgeDevicesCount" class="ml-auto bg-cyberSurface text-slate-300 px-2 py-0.5 rounded-full text-[10px] font-mono">0</span>
+        </button>
+        <button onclick="switchTab('users')" id="nav-users" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span>User Directory</span>
+        </button>
+        <button onclick="switchTab('alerts')" id="nav-alerts" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all">
+          <i data-lucide="bell" class="w-4 h-4"></i>
+          <span>Security Signals</span>
+          <span id="badgeAlertsCount" class="ml-auto bg-cyberRed/20 text-cyberRed px-2 py-0.5 rounded-full text-[10px] font-mono font-bold">0</span>
+        </button>
+        <button onclick="switchTab('policies')" id="nav-policies" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all">
+          <i data-lucide="shield-alert" class="w-4 h-4"></i>
+          <span>MDM Policies</span>
+        </button>
+        <button onclick="switchTab('audit')" id="nav-audit" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all">
+          <i data-lucide="scroll" class="w-4 h-4"></i>
+          <span>Audit Logs</span>
+        </button>
+      </nav>
+
+      <!-- Backend Connection Status Chip -->
+      <div class="p-4 border-t border-cyberBorder text-xs">
+        <div class="bg-cyberSurface/60 border border-cyberBorder rounded-xl p-3">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="relative flex h-2 w-2">
+              <span id="backendStatusPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyberGreen opacity-75"></span>
+              <span id="backendStatusDot" class="relative inline-flex rounded-full h-2 w-2 bg-cyberGreen"></span>
+            </span>
+            <span id="backendStatusText" class="text-[11px] font-semibold text-cyberGreen">Render Cloud Connected</span>
+          </div>
+          <div class="text-[10px] text-slate-400 font-mono truncate" id="backendEndpointDisplay">https://mobilityshield-backend.onrender.com</div>
+        </div>
+      </div>
+
+      <!-- Current Admin User Footer -->
+      <div class="p-4 border-t border-cyberBorder flex items-center justify-between">
+        <div class="flex items-center gap-2.5 overflow-hidden">
+          <div class="w-8 h-8 rounded-full bg-cyberCyan/20 text-cyberCyan flex items-center justify-center font-bold text-xs uppercase border border-cyberCyan/40">
+            AD
+          </div>
+          <div class="truncate">
+            <div id="adminUserName" class="text-xs font-semibold text-white truncate">Security Administrator</div>
+            <div id="adminUserEmail" class="text-[10px] text-slate-400 truncate">admin@mobilityshield.com</div>
+          </div>
+        </div>
+        <button onclick="handleLogout()" title="Log Out" class="p-1.5 rounded-lg text-slate-400 hover:text-cyberRed hover:bg-cyberRed/10 transition-colors">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT VIEW AREA -->
+    <main class="flex-1 flex flex-col overflow-hidden bg-cyberDark">
+
+      <!-- TOP BAR -->
+      <header class="h-16 bg-cyberCard/60 border-b border-cyberBorder backdrop-blur-md px-8 flex items-center justify-between shrink-0">
+        <div>
+          <h2 id="pageTitle" class="text-lg font-bold text-white flex items-center gap-2">
+            <span>Executive Security Dashboard</span>
+          </h2>
+          <p id="pageSubtitle" class="text-xs text-slate-400">Fleet telemetry, quarantine status, and threat signals overview</p>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- Auto Refresh Switch -->
+          <div class="flex items-center gap-2 bg-cyberSurface px-3 py-1.5 rounded-xl border border-cyberBorder text-xs text-slate-300">
+            <i data-lucide="refresh-cw" id="autoRefreshIcon" class="w-3.5 h-3.5 text-cyberCyan animate-spin" style="animation-duration: 3s;"></i>
+            <span class="text-[11px]">Live Sync (8s)</span>
+          </div>
+
+          <!-- Manual Refresh Button -->
+          <button onclick="refreshCurrentTab()" class="p-2 rounded-xl bg-cyberSurface hover:bg-cyberBorder border border-cyberBorder text-slate-300 hover:text-white transition-all shadow-sm">
+            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEW PANELS -->
+      <div class="flex-1 overflow-y-auto p-8 space-y-6">
+
+        <!-- ==================== TAB 1: DASHBOARD ==================== -->
+        <section id="view-dashboard" class="tab-view space-y-6">
+          
+          <!-- Quick Status Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Total Devices -->
+            <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-5 relative overflow-hidden group hover:border-cyberCyan/50 transition-all">
+              <div class="flex justify-between items-start mb-3">
+                <span class="text-xs font-medium text-slate-400">Enrolled Devices</span>
+                <div class="p-2 bg-cyberCyan/10 text-cyberCyan rounded-xl border border-cyberCyan/20">
+                  <i data-lucide="smartphone" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div id="statTotalDevices" class="text-3xl font-extrabold text-white font-mono">0</div>
+              <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
+                <span class="inline-block w-2 h-2 rounded-full bg-cyberCyan"></span>
+                <span>Enrolled Mobile Endpoints</span>
+              </div>
+            </div>
+
+            <!-- Active Devices -->
+            <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-5 relative overflow-hidden group hover:border-cyberGreen/50 transition-all">
+              <div class="flex justify-between items-start mb-3">
+                <span class="text-xs font-medium text-slate-400">Active Endpoints</span>
+                <div class="p-2 bg-cyberGreen/10 text-cyberGreen rounded-xl border border-cyberGreen/20">
+                  <i data-lucide="check-circle" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div id="statActiveDevices" class="text-3xl font-extrabold text-cyberGreen font-mono">0</div>
+              <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
+                <span class="inline-block w-2 h-2 rounded-full bg-cyberGreen"></span>
+                <span>Healthy & Compliant</span>
+              </div>
+            </div>
+
+            <!-- Quarantined Devices -->
+            <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-5 relative overflow-hidden group hover:border-cyberRed/50 transition-all">
+              <div class="flex justify-between items-start mb-3">
+                <span class="text-xs font-medium text-slate-400">Quarantined Endpoints</span>
+                <div class="p-2 bg-cyberRed/10 text-cyberRed rounded-xl border border-cyberRed/20">
+                  <i data-lucide="lock" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div id="statQuarantinedDevices" class="text-3xl font-extrabold text-cyberRed font-mono">0</div>
+              <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
+                <span class="inline-block w-2 h-2 rounded-full bg-cyberRed"></span>
+                <span>Locked into Lost Mode</span>
+              </div>
+            </div>
+
+            <!-- Critical Alerts -->
+            <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-5 relative overflow-hidden group hover:border-cyberAmber/50 transition-all">
+              <div class="flex justify-between items-start mb-3">
+                <span class="text-xs font-medium text-slate-400">Security Signals</span>
+                <div class="p-2 bg-cyberAmber/10 text-cyberAmber rounded-xl border border-cyberAmber/20">
+                  <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div id="statTotalAlerts" class="text-3xl font-extrabold text-cyberAmber font-mono">0</div>
+              <div class="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
+                <span class="inline-block w-2 h-2 rounded-full bg-cyberAmber"></span>
+                <span id="statCriticalAlerts">0 critical signals</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Chart: Fleet Posture Breakdown -->
+            <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-6">
+              <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                <i data-lucide="pie-chart" class="w-4 h-4 text-cyberCyan"></i>
+                <span>Device Security Distribution</span>
+              </h3>
+              <p class="text-xs text-slate-400 mb-4">Ratio of Healthy vs Quarantined Endpoints</p>
+              <div class="h-56 relative flex items-center justify-center">
+                <canvas id="chartPosture"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart: Threat Level Breakdown -->
+            <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-6">
+              <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                <i data-lucide="bar-chart-2" class="w-4 h-4 text-cyberAmber"></i>
+                <span>Risk Level Analysis</span>
+              </h3>
+              <p class="text-xs text-slate-400 mb-4">Calculated risk tiers across enrolled fleet</p>
+              <div class="h-56 relative flex items-center justify-center">
+                <canvas id="chartRisk"></canvas>
+              </div>
+            </div>
+
+            <!-- Quick Action Box -->
+            <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-6 flex flex-col justify-between">
+              <div>
+                <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                  <i data-lucide="zap" class="w-4 h-4 text-cyberCyan"></i>
+                  <span>Emergency MDM Actions</span>
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">Instant remote controls over managed devices</p>
+
+                <div class="space-y-3">
+                  <div class="p-3 bg-cyberSurface/60 border border-cyberBorder rounded-xl">
+                    <div class="text-xs font-semibold text-white mb-1">Find-My-Phone Lost Mode Watchdog</div>
+                    <p class="text-[11px] text-slate-400">Enforces complete lockdown if lock PIN/pattern fails 3 times. Factory reset is disabled.</p>
+                  </div>
+                  <div class="p-3 bg-cyberSurface/60 border border-cyberBorder rounded-xl">
+                    <div class="text-xs font-semibold text-white mb-1">Remote Unquarantine Protocol</div>
+                    <p class="text-[11px] text-slate-400">Unlocking a device from this portal immediately unlocks the physical phone in under 4 seconds.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-4 border-t border-cyberBorder">
+                <button onclick="switchTab('devices')" class="w-full bg-cyberSurface hover:bg-cyberBorder border border-cyberBorder text-cyberCyan font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all">
+                  <span>Manage All Devices in Fleet</span>
+                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Devices Snapshot -->
+          <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-bold text-white">Managed Devices Snapshot</h3>
+                <p class="text-xs text-slate-400">Recently active mobile devices in your organization</p>
+              </div>
+              <button onclick="switchTab('devices')" class="text-xs text-cyberCyan hover:underline font-semibold">View All Devices &rarr;</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-cyberBorder/60 bg-cyberSurface/30">
+                  <tr>
+                    <th class="py-3 px-4">Device Model</th>
+                    <th class="py-3 px-4">Device ID</th>
+                    <th class="py-3 px-4">Android OS</th>
+                    <th class="py-3 px-4">Security Score</th>
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tableRecentDevicesBody" class="divide-y divide-cyberBorder/40">
+                  <tr>
+                    <td colspan="6" class="py-8 text-center text-slate-500 font-mono">Loading managed endpoints...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 2: FLEET DEVICES ==================== -->
+        <section id="view-devices" class="tab-view hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-base font-bold text-white">Enterprise Fleet Inventory</h3>
+              <p class="text-xs text-slate-400">All registered Android devices enrolled under MobilityShield</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <div class="relative w-64">
+                <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3 top-2.5"></i>
+                <input type="text" id="deviceSearchInput" oninput="filterDevices()" placeholder="Search by model, ID..." class="w-full bg-cyberSurface border border-cyberBorder rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyberCyan transition-colors">
+              </div>
+              
+              <select id="deviceStatusFilter" onchange="filterDevices()" class="bg-cyberSurface border border-cyberBorder rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyberCyan">
+                <option value="ALL">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="QUARANTINED">Quarantined</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="bg-cyberCard border border-cyberBorder rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-cyberBorder bg-cyberSurface/40">
+                  <tr>
+                    <th class="py-3 px-4">Device</th>
+                    <th class="py-3 px-4">Device ID</th>
+                    <th class="py-3 px-4">Hardware Telemetry</th>
+                    <th class="py-3 px-4">Security Score</th>
+                    <th class="py-3 px-4">Quarantine Status</th>
+                    <th class="py-3 px-4">Last Seen</th>
+                    <th class="py-3 px-4 text-right">Remote Controls</th>
+                  </tr>
+                </thead>
+                <tbody id="tableAllDevicesBody" class="divide-y divide-cyberBorder/40">
+                  <tr>
+                    <td colspan="7" class="py-12 text-center text-slate-500 font-mono">Loading fleet inventory...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 3: USER DIRECTORY ==================== -->
+        <section id="view-users" class="tab-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white">Registered Users</h3>
+              <p class="text-xs text-slate-400">Users authorized with MobilityShield authentication profiles</p>
+            </div>
+            <button onclick="loadUsers()" class="px-3 py-1.5 rounded-xl bg-cyberSurface hover:bg-cyberBorder border border-cyberBorder text-xs text-slate-300 flex items-center gap-2">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Refresh Users</span>
+            </button>
+          </div>
+
+          <div class="bg-cyberCard border border-cyberBorder rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-cyberBorder bg-cyberSurface/40">
+                  <tr>
+                    <th class="py-3 px-4">Name</th>
+                    <th class="py-3 px-4">Email</th>
+                    <th class="py-3 px-4">Role</th>
+                    <th class="py-3 px-4">Account Status</th>
+                    <th class="py-3 px-4">User UID</th>
+                    <th class="py-3 px-4">Registered Date</th>
+                  </tr>
+                </thead>
+                <tbody id="tableUsersBody" class="divide-y divide-cyberBorder/40">
+                  <tr>
+                    <td colspan="6" class="py-12 text-center text-slate-500 font-mono">Loading user directory...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 4: SECURITY ALERTS ==================== -->
+        <section id="view-alerts" class="tab-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white">Security Alerts & Signals</h3>
+              <p class="text-xs text-slate-400">Real-time threat events ingested from fleet endpoints</p>
+            </div>
+          </div>
+
+          <div class="bg-cyberCard border border-cyberBorder rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-cyberBorder bg-cyberSurface/40">
+                  <tr>
+                    <th class="py-3 px-4">Severity</th>
+                    <th class="py-3 px-4">Alert Title</th>
+                    <th class="py-3 px-4">Target Device</th>
+                    <th class="py-3 px-4">Description</th>
+                    <th class="py-3 px-4">Detected At</th>
+                  </tr>
+                </thead>
+                <tbody id="tableAlertsBody" class="divide-y divide-cyberBorder/40">
+                  <tr>
+                    <td colspan="5" class="py-12 text-center text-slate-500 font-mono">Loading security alerts...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 5: MDM POLICIES ==================== -->
+        <section id="view-policies" class="tab-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white">Fleet MDM Security Policies</h3>
+              <p class="text-xs text-slate-400">Baseline compliance rules applied to all enrolled devices</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Policy 1: Lockout & Quarantine Rule -->
+            <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="p-2.5 rounded-xl bg-cyberRed/10 text-cyberRed border border-cyberRed/20">
+                  <i data-lucide="lock" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-white">3-Wrong-Attempt Phone Lock Policy</h4>
+                  <p class="text-xs text-slate-400">Find-My-Phone Lost Mode protection</p>
+                </div>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                If an unauthorized user enters the phone screen lock (PIN, pattern, password) incorrectly 3 times, the device immediately locks and transitions into Enterprise Quarantine Lost Mode.
+              </p>
+              <div class="space-y-2 text-xs font-mono bg-cyberSurface/50 p-3 rounded-xl border border-cyberBorder/60">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Max Failed Attempts:</span>
+                  <span class="text-cyberCyan font-bold">3 attempts</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Action on Breach:</span>
+                  <span class="text-cyberRed font-bold">DEVICE_QUARANTINE_LOCK</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Factory Reset / Wipe:</span>
+                  <span class="text-cyberGreen font-bold">DISABLED (0% Data Loss)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Unlock Option 1:</span>
+                  <span class="text-cyberCyan font-bold">Admin Master PIN (999888)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Unlock Option 2:</span>
+                  <span class="text-cyberGreen font-bold">Remote Console Recovery</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Policy 2: Hardware & OS Compliance -->
+            <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="p-2.5 rounded-xl bg-cyberCyan/10 text-cyberCyan border border-cyberCyan/20">
+                  <i data-lucide="cpu" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-white">OS & Integrity Baseline</h4>
+                  <p class="text-xs text-slate-400">Hardware integrity and root prevention</p>
+                </div>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                Enforces minimum Android version compliance, screen lock activation, and prevents rooted or jailbroken devices from accessing corporate resources.
+              </p>
+              <div class="space-y-2 text-xs font-mono bg-cyberSurface/50 p-3 rounded-xl border border-cyberBorder/60">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Require Screen Lock:</span>
+                  <span class="text-cyberGreen font-bold">ENFORCED (PIN/Biometric)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Root Detection:</span>
+                  <span class="text-cyberRed font-bold">BLOCKED (-50 Score)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Min Android OS:</span>
+                  <span class="text-cyberCyan font-bold">Android 10+ (API 29)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 6: AUDIT TRAIL ==================== -->
+        <section id="view-audit" class="tab-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white">Administrative Audit Trail</h3>
+              <p class="text-xs text-slate-400">Immutable ledger of administrative actions and recovery operations</p>
+            </div>
+          </div>
+
+          <div class="bg-cyberCard border border-cyberBorder rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-cyberBorder bg-cyberSurface/40">
+                  <tr>
+                    <th class="py-3 px-4">Timestamp</th>
+                    <th class="py-3 px-4">Action</th>
+                    <th class="py-3 px-4">Actor</th>
+                    <th class="py-3 px-4">Target Device</th>
+                    <th class="py-3 px-4">Details</th>
+                  </tr>
+                </thead>
+                <tbody id="tableAuditBody" class="divide-y divide-cyberBorder/40">
+                  <tr>
+                    <td colspan="5" class="py-12 text-center text-slate-500 font-mono">Loading audit logs...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== DEVICE DETAILS INSPECTION MODAL ==================== -->
+  <div id="deviceModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+    <div class="bg-cyberCard border border-cyberBorder rounded-2xl p-6 max-w-xl w-full shadow-2xl relative">
+      <div class="flex items-center justify-between pb-4 border-b border-cyberBorder">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 rounded-xl bg-cyberCyan/10 text-cyberCyan border border-cyberCyan/30">
+            <i data-lucide="smartphone" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 id="modalDeviceName" class="text-base font-bold text-white">Realme RMX3686</h3>
+            <p id="modalDeviceId" class="text-xs text-slate-400 font-mono">dev_123456</p>
+          </div>
+        </div>
+        <button onclick="closeDeviceModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-cyberSurface p-3 rounded-xl border border-cyberBorder/60">
+            <span class="text-slate-400 block mb-1">Status Posture</span>
+            <span id="modalDeviceStatus" class="font-bold font-mono text-cyberGreen">ACTIVE</span>
+          </div>
+          <div class="bg-cyberSurface p-3 rounded-xl border border-cyberBorder/60">
+            <span class="text-slate-400 block mb-1">Security Score</span>
+            <span id="modalDeviceScore" class="font-bold font-mono text-cyberCyan">100 / 100</span>
+          </div>
+        </div>
+
+        <div class="bg-cyberSurface/60 p-4 rounded-xl border border-cyberBorder/60 space-y-2 font-mono">
+          <div class="flex justify-between"><span class="text-slate-400">Manufacturer & Model:</span><span id="modalDeviceModel" class="text-white">Realme RMX3686</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Android Version:</span><span id="modalDeviceOS" class="text-white">Android 15 (API 35)</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Security Patch:</span><span id="modalDevicePatch" class="text-white">2026-11-05</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Battery Level:</span><span id="modalDeviceBattery" class="text-white">85% (Charging)</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">RAM Utilization:</span><span id="modalDeviceRam" class="text-white">4.2 GB / 8.0 GB</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Storage Utilization:</span><span id="modalDeviceStorage" class="text-white">64 GB / 128 GB</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Network State:</span><span id="modalDeviceNetwork" class="text-white">Wi-Fi Connected</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Quarantine Reason:</span><span id="modalDeviceQuarantineReason" class="text-cyberRed font-sans">None</span></div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-cyberBorder flex justify-end gap-3">
+        <button onclick="closeDeviceModal()" class="px-4 py-2 rounded-xl bg-cyberSurface text-slate-300 hover:text-white text-xs font-semibold">Close</button>
+        <button id="modalActionBtn" class="px-4 py-2 rounded-xl text-xs font-bold transition-all">Action</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

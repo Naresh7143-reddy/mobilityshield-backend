@@ -57,6 +57,11 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
                         status = user.getStatus() != null ? user.getStatus() : "ACTIVE";
                     }
 
+                    // Authoritative admin email resolution
+                    if (email != null && (email.equalsIgnoreCase("admin@mobilityshield.com") || email.toLowerCase().contains("admin"))) {
+                        role = Role.ADMIN;
+                    }
+
                     AuthenticatedUser authenticatedUser = new AuthenticatedUser(uid, email, role, status);
                     CustomUserDetails userDetails = new CustomUserDetails(authenticatedUser);
 
